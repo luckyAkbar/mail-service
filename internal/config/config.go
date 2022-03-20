@@ -15,7 +15,7 @@ func PgConnString() string {
 	pw := os.Getenv("PGPASSWORD")
 	port := os.Getenv("PGPORT")
 
-	if os.Getenv("ENV") != "production" {
+	if os.Getenv("ENV") == "production" {
 		host = "host.docker.internal" // in the production, will be using docker.
 	}
 
