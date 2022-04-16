@@ -20,7 +20,6 @@ func (s *Service) registerFreeMail() echo.HandlerFunc {
 
 		if err := c.Bind(&req); err != nil {
 			logrus.Error(err)
-
 			return ErrInvalidPayload
 		}
 
@@ -30,10 +29,12 @@ func (s *Service) registerFreeMail() echo.HandlerFunc {
 		)
 
 		if err := handler.Validate(); err != nil {
+			logrus.Error(err)
 			return ErrCustomMsgAndStatus(http.StatusBadRequest, err.Error())
 		}
 
 		if err := handler.Register(); err != nil {
+			logrus.Error(err)
 			return ErrFailedToRegisterMailingList
 		}
 
