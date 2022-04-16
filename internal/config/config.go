@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -24,12 +23,22 @@ func PgConnString() string {
 	return dsn
 }
 
-func ServerPort() int {
-	port, err := strconv.Atoi(os.Getenv("SERVER_PORT"))
+func ServerPort() string {
+	port := os.Getenv("SERVER_PORT")
 
-	if err != nil {
-		return 5000 // default port
+	if port == "" {
+		return "5000" // default port
 	}
 
 	return port
+}
+
+func LogLevel() string {
+	level := os.Getenv("LOG_LEVEL")
+
+	if level == "" {
+		return "debug"
+	}
+
+	return level
 }
