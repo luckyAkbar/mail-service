@@ -2,13 +2,14 @@ package console
 
 import (
 	"fmt"
-	"log"
 	"mail-service/internal/config"
 	"mail-service/internal/db"
-	"mail-service/internal/router"
-	"net/http"
+	"mail-service/internal/delivery/httpsvc"
 	"os"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -25,19 +26,16 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) {
 	if err := db.PgConnect(); err != nil {
-		log.Panic(err.Error())
+		logrus.Error(err.Error())
 		os.Exit(1)
 	}
 
-	r := router.Router()
-	s := http.Server{
-		Addr:    fmt.Sprintf(":%d", config.ServerPort()),
-		Handler: r,
-	}
+	httpServer := echo.New()
+	httpServer.Use(middleware.Logger())
 
-	log.Print(fmt.Sprintf("Server is listening on port: %d", config.ServerPort()))
+	group := httpServer.Group("")
 
-	if err := s.ListenAndServe(); err != nil {
-		log.Fatal(fmt.Sprintf("Server failed to start: %s", err.Error()))
-	}
+	httpsvc.RouteService(group)
+
+	httpServer.Start(fmt.Sprintf(":%s", config.ServerPort()))
 }

@@ -3,8 +3,10 @@ module mail-service
 go 1.17
 
 require (
+	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.7.2
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.3

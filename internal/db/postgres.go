@@ -2,10 +2,10 @@ package db
 
 import (
 	"errors"
-	"log"
 	"mail-service/internal/config"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -17,11 +17,11 @@ func PgConnect() error {
 	DB, err = gorm.Open(postgres.Open(config.PgConnString()), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal(err.Error())
+		logrus.Error(err.Error())
 		return errors.New("failed to initialize connection to postgres db")
 	}
 
-	log.Print("Successfully connected to Postgres Database")
+	logrus.Info("Successfully connected to Postgres Database")
 
 	return nil
 }
