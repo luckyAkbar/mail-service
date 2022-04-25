@@ -5,6 +5,7 @@ import (
 	"mail-service/internal/config"
 	"mail-service/internal/db"
 	"mail-service/internal/delivery/httpsvc"
+	"mail-service/internal/worker"
 	"os"
 
 	"github.com/labstack/echo/v4"
@@ -30,11 +31,12 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	mailWorker := worker.NewMailWorker()
+	go mailWorker.SpawnWorker()
+
 	httpServer := echo.New()
 	httpServer.Use(middleware.Logger())
-
 	group := httpServer.Group("")
-
 	httpsvc.RouteService(group)
 
 	httpServer.Start(fmt.Sprintf(":%s", config.ServerPort()))

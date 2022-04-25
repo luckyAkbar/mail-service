@@ -3,8 +3,11 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
-	_ "github.com/joho/godotenv/autoload"
+	sib "github.com/sendinblue/APIv3-go-library/lib"
+	"github.com/sirupsen/logrus"
 )
 
 func PgConnString() string {
@@ -41,4 +44,80 @@ func LogLevel() string {
 	}
 
 	return level
+}
+
+func GetSIBKey() string {
+	cfg := os.Getenv("SIB_API_KEY")
+
+	if cfg == "" {
+		logrus.Error("SIB_API_KEY is not set. Mailing utility is disabled")
+	}
+
+	return cfg
+}
+
+func SIBClient() *sib.APIClient {
+	cfg := sib.NewConfiguration()
+	cfg.AddDefaultHeader("api-key", GetSIBKey())
+
+	return sib.NewAPIClient(cfg)
+}
+
+func SIBRegisteredEmail() string {
+	return os.Getenv("SIB_REGISTERED_EMAIL")
+}
+
+func SMTPServer() string {
+	cfg := os.Getenv("SMTP_SERVER")
+
+	if cfg == "" {
+		logrus.Error("SMTP_SERVER value is not set. Mailing utility is broken")
+	}
+
+	return cfg
+}
+
+func SMPTPort() int {
+	cfg, err := strconv.Atoi(os.Getenv("SMPT_PORT"))
+	if err != nil {
+		return 587
+	}
+
+	return cfg
+}
+
+func SMTPKey() string {
+	cfg := os.Getenv("SMTP_KEY")
+	if cfg == "" {
+		logrus.Error("SMTP_SERVER value is not set. Mailing utility is broken")
+	}
+
+	return cfg
+}
+
+func SMTPAddress() string {
+	return fmt.Sprintf("%s:%d", SMTPServer(), SMPTPort())
+}
+
+func FreeMailerWorkerSleepDuration() time.Duration {
+	cfg := os.Getenv("FREE_MAILER_WORKER_SLEEP_DURATION_SEC")
+	if cfg == "" {
+		return DEFAULT_FREE_MAILER_WORKER_SLEEP_DURATION
+	}
+
+	sec, err := strconv.Atoi(cfg)
+	if err != nil {
+		return DEFAULT_FREE_MAILER_WORKER_SLEEP_DURATION
+	}
+
+	return time.Duration(sec * int(time.Second))
+}
+
+func FreeMailProcessingLimit() int {
+	cfg, err := strconv.Atoi(os.Getenv("FREE_MAIL_PROCESSING_LIMIT_PER_DURATION"))
+	if err != nil {
+		return DEFAULT_FREE_EMAIL_LIST_QUERY_LIMIT
+	}
+
+	return cfg
 }
