@@ -17,11 +17,19 @@ type FreeMail struct {
 	Subject         string
 }
 
-func NewFreeMailHandler(receipientName, mailerName, payload string) *FreeMail {
+func NewFreeMailHandler(
+	receipientName,
+	receipientEmail,
+	senderName,
+	HTMLContent,
+	subject string,
+) *FreeMail {
 	return &FreeMail{
-		ReceipientName: receipientName,
-		MailerName:     mailerName,
-		Payload:        payload,
+		ReceipientName:  receipientName,
+		ReceipientEmail: receipientEmail,
+		SenderName:      senderName,
+		HTMLContent:     HTMLContent,
+		Subject:         subject,
 	}
 }
 
