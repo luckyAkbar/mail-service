@@ -17,7 +17,7 @@ COPY . .
 
 RUN go build -o /app/bin main.go
 
-RUN rm -r src/
+RUN rm -r app/src/
 
 EXPOSE 5000
 
