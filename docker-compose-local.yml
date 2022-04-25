@@ -8,15 +8,17 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "15000:5000"
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    volumes:
+      - "./.env:/app/.env"
 
   mail_service_db:
     image: postgres:14-alpine
     volumes:
       - /var/lib/postgresql/mail_service_postgres_data:/var/lib/postgresql/data
     ports:
-      - "43211:5432"
+      - "${PGPORT}:5432"
     environment:
-      - POSTGRES_USER=lucky
-      - POSTGRES_PASSWORD=aslWIUT1234)!!!223@#
-      - POSTGRES_DB=mail_service
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
