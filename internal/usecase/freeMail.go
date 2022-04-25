@@ -34,13 +34,21 @@ func NewFreeMailHandler(
 }
 
 func (m *FreeMail) Validate() error {
-	err := helper.ValidateEmailAdressList([]string{
-		m.ReceipientName,
-		m.MailerName,
-	})
-
+	err := helper.ValidateEmailAdressList([]string{m.ReceipientEmail})
 	if err != nil {
 		return fmt.Errorf("Operation invalid because: %s", err.Error())
+	}
+
+	if m.SenderName == "" {
+		return ErrSenderNameEmpty
+	}
+
+	if m.Subject == "" {
+		return ErrSubjectEmpty
+	}
+
+	if m.HTMLContent == "" {
+		return ErrHTMLContentEmpty
 	}
 
 	return nil
