@@ -17,10 +17,6 @@ COPY . .
 
 RUN go build -o /app/bin main.go
 
-WORKDIR /app
-
-COPY .env .
-
 RUN rm -r src/
 
 EXPOSE 5000
