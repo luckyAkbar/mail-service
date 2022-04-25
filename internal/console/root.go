@@ -1,7 +1,6 @@
 package console
 
 import (
-	"fmt"
 	"os"
 
 	"mail-service/internal/config"
@@ -19,7 +18,7 @@ var RootCmd = &cobra.Command{
 // Execute: :nodoc:
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }
