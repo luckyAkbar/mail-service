@@ -20,7 +20,7 @@ func init() {
 }
 
 func seed(cmd *cobra.Command, args []string) {
-	log.Println("Begin seedeng database...")
+	log.Println("Begin seeding database...")
 
 	if err := db.PgConnect(); err != nil {
 		log.Panic("Failed to connect to the database.")
