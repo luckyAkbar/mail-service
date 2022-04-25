@@ -17,8 +17,10 @@ COPY . .
 
 RUN go build -o /app/bin main.go
 
-RUN rm -r /app/src/
+WORKDIR /app
+
+RUN rm -r src/
 
 EXPOSE 5000
 
-CMD ["/app/bin/main", "server"]
+CMD ["bin/main", "server"]
