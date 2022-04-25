@@ -55,9 +55,17 @@ func (m *FreeMail) Validate() error {
 }
 
 func (m *FreeMail) Register() error {
-	mailRepo := repository.NewFreeMailRepo(m.MailerName, m.ReceipientName, m.Payload)
+	space := " "
+	mailRepo := repository.NewMailRepo()
+	err := mailRepo.RegisterFreeEmail(
+		strings.Trim(m.Subject, space),
+		strings.Trim(m.ReceipientEmail, space),
+		strings.Trim(m.ReceipientName, space),
+		strings.Trim(m.SenderName, space),
+		m.HTMLContent,
+	)
 
-	if err := mailRepo.Create(); err != nil {
+	if err != nil {
 		logrus.Error(err)
 		return err
 	}
