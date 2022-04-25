@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	"mail-service/internal/helper"
 	"mail-service/internal/repository"
 	"strings"
@@ -36,7 +35,7 @@ func NewFreeMailHandler(
 func (m *FreeMail) Validate() error {
 	err := helper.ValidateEmailAdressList([]string{m.ReceipientEmail})
 	if err != nil {
-		return fmt.Errorf("Operation invalid because: %s", err.Error())
+		return ErrMailAdressInvalid
 	}
 
 	if m.SenderName == "" {
