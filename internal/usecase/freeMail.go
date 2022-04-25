@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"mail-service/internal/helper"
 	"mail-service/internal/repository"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
 type FreeMail struct {
-	ReceipientName string
-	MailerName     string
-	Payload        string
+	ReceipientName  string
+	ReceipientEmail string
+	SenderName      string
+	HTMLContent     string
+	Subject         string
 }
 
 func NewFreeMailHandler(receipientName, mailerName, payload string) *FreeMail {
