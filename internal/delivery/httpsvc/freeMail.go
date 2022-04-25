@@ -10,9 +10,11 @@ import (
 
 func (s *Service) registerFreeMail() echo.HandlerFunc {
 	type request struct {
-		ReceipientName string `json:"receipient_name"`
-		MailerName     string `json:"mailer_name"`
-		Payload        string `json:"payload"`
+		ReceipientName  string `json:"receipient_name"`
+		ReceipientEmail string `json:"receipient_email"`
+		SenderName      string `json:"sender_name"`
+		HTMLContent     string `json:"html_content"`
+		Subject         string `json:"subject"`
 	}
 
 	return func(c echo.Context) error {
@@ -25,12 +27,15 @@ func (s *Service) registerFreeMail() echo.HandlerFunc {
 
 		handler := usecase.NewFreeMailHandler(
 			req.ReceipientName,
-			req.MailerName, req.Payload,
+			req.ReceipientEmail,
+			req.SenderName,
+			req.HTMLContent,
+			req.Subject,
 		)
 
 		if err := handler.Validate(); err != nil {
 			logrus.Error(err)
-			return ErrCustomMsgAndStatus(http.StatusBadRequest, err.Error())
+			return err
 		}
 
 		if err := handler.Register(); err != nil {
