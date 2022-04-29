@@ -121,3 +121,21 @@ func FreeMailProcessingLimit() int {
 
 	return cfg
 }
+
+func PrivateKey() string {
+	cfg := os.Getenv("PRIVATE_KEY")
+	if cfg == "" {
+		logrus.Panic("PRIVATE_KEY is not provided")
+	}
+
+	return cfg
+}
+
+func IvKey() string {
+	cfg := os.Getenv("IV_KEY")
+	if cfg == "" {
+		logrus.Panic("IV_KEY is not provided")
+	}
+
+	return cfg
+}
