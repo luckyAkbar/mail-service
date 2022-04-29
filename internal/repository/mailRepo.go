@@ -10,13 +10,18 @@ import (
 )
 
 type MailRepository struct {
-	db            *gorm.DB
-	priorityLevel int
-	status        int
-	userID        int
-	receipient    string
-	mailerName    string
-	payload       string
+	db *gorm.DB
+}
+
+type MailInput struct {
+	Subject         string
+	ReceipientEmail string
+	ReceipientName  string
+	SenderName      string
+	HTMLContent     string
+	Priority        int
+	Status          int
+	UserID          int
 }
 
 func NewMailRepo() *MailRepository {
@@ -25,16 +30,16 @@ func NewMailRepo() *MailRepository {
 	}
 }
 
-func (f *MailRepository) RegisterFreeEmail(subject, receipientEmail, receipientName, senderName, HTMLContent string) error {
+func (f *MailRepository) RegisterEmail(input MailInput) error {
 	mailingList := &models.MailingList{
-		Subject:         subject,
-		ReceipientEmail: receipientEmail,
-		ReceipientName:  receipientName,
-		SenderName:      senderName,
-		HtmlContent:     HTMLContent,
-		Priority:        config.LOWEST_PRIORITY_LEVEL,
-		Status:          config.MAILING_STATUS_PENDING,
-		UserID:          config.FREE_USER_ID,
+		Subject:         input.Subject,
+		ReceipientEmail: input.ReceipientEmail,
+		ReceipientName:  input.ReceipientName,
+		SenderName:      input.SenderName,
+		HtmlContent:     input.HTMLContent,
+		Priority:        input.Priority,
+		Status:          input.Status,
+		UserID:          input.UserID,
 	}
 
 	if err := f.db.Create(mailingList).Error; err != nil {

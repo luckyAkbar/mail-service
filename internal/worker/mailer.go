@@ -8,17 +8,20 @@ import (
 	"mail-service/internal/repository"
 	"time"
 
+	"github.com/kumparan/go-utils/encryption"
 	sib "github.com/sendinblue/APIv3-go-library/lib"
 	"github.com/sirupsen/logrus"
 )
 
 type MailWorker struct {
 	MailRepo *repository.MailRepository
+	Cryptor  *encryption.AESCryptor
 }
 
 func NewMailWorker() *MailWorker {
 	return &MailWorker{
 		MailRepo: repository.NewMailRepo(),
+		Cryptor:  helper.CreateCryptor(),
 	}
 }
 
@@ -46,13 +49,19 @@ func (m *MailWorker) SpawnWorker() {
 func (m *MailWorker) sendEmail(list []models.MailingList) {
 	sibHelper := helper.NewSIBHelper()
 	for _, mail := range list {
-		err := sibHelper.SendEmail(sibHelper.CreateEmailContent(
-			mail.Subject,
-			mail.SenderName,
-			mail.HtmlContent,
+		content, err := m.decryptEmailContent(mail)
+		if err != nil {
+			logrus.Error(err)
+			continue
+		}
+
+		err = sibHelper.SendEmail(sibHelper.CreateEmailContent(
+			content.Subject,
+			content.SenderName,
+			content.HtmlContent,
 			sib.SendSmtpEmailTo{
-				Name:  mail.ReceipientName,
-				Email: mail.ReceipientEmail,
+				Name:  content.ReceipientName,
+				Email: content.ReceipientEmail,
 			},
 		))
 
@@ -66,4 +75,44 @@ func (m *MailWorker) sendEmail(list []models.MailingList) {
 	}
 
 	logrus.Info(fmt.Sprintf("Processing %d free email in this iteration", len(list)))
+}
+
+func (m *MailWorker) decryptEmailContent(content models.MailingList) (models.MailingList, error) {
+	subject, err := m.Cryptor.Decrypt(content.Subject)
+	if err != nil {
+		logrus.Error(err)
+		return content, err
+	}
+
+	receipientEmail, err := m.Cryptor.Decrypt(content.ReceipientEmail)
+	if err != nil {
+		logrus.Error(err)
+		return content, err
+	}
+
+	receipientName, err := m.Cryptor.Decrypt(content.ReceipientName)
+	if err != nil {
+		logrus.Error(err)
+		return content, err
+	}
+
+	senderName, err := m.Cryptor.Decrypt(content.SenderName)
+	if err != nil {
+		logrus.Error(err)
+		return content, err
+	}
+
+	HTMLContent, err := m.Cryptor.Decrypt(content.HtmlContent)
+	if err != nil {
+		logrus.Error(err)
+		return content, err
+	}
+
+	return models.MailingList{
+		Subject:         subject,
+		ReceipientEmail: receipientEmail,
+		ReceipientName:  receipientName,
+		SenderName:      senderName,
+		HtmlContent:     HTMLContent,
+	}, nil
 }
