@@ -18,4 +18,5 @@ func RouteService(group *echo.Group) {
 
 func (s *Service) initRoutes() {
 	s.group.POST("/mail/free", s.registerFreeMail())
+	s.group.POST("/register", s.registerUser())
 }

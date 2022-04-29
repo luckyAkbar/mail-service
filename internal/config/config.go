@@ -139,3 +139,16 @@ func IvKey() string {
 
 	return cfg
 }
+
+func GetFreeMailUserEmailAddress() string {
+	cfg := os.Getenv("FREE_MAIL_USER_EMAIL_ADDRESS")
+	if cfg == "" {
+		logrus.Warn("Free mail user are registered with empty string")
+	}
+
+	return cfg
+}
+
+func GetFreeMailUserPassword() string {
+	return os.Getenv("FREE_MAIL_USER_PASSWORD")
+}
