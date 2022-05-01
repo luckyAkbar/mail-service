@@ -152,3 +152,12 @@ func GetFreeMailUserEmailAddress() string {
 func GetFreeMailUserPassword() string {
 	return os.Getenv("FREE_MAIL_USER_PASSWORD")
 }
+
+func GetEmailConfirmationCode() string {
+	cfg := os.Getenv("EMAIL_ACCOUNT_CONFIRMATION_LINK")
+	if cfg == "" {
+		return DEFAULT_EMAIL_CONFIRMATION_LINK
+	}
+
+	return cfg
+}

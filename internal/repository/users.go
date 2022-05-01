@@ -16,10 +16,11 @@ type UserRepo struct {
 }
 
 type CreateUserInput struct {
-	EncryptedEmail string
-	Username       string
-	Password       string
-	PhoneNumber    string
+	EncryptedEmail              string
+	Username                    string
+	Password                    string
+	PhoneNumber                 string
+	HashedEmailCodeConfirmation string
 }
 
 func NewUserRepo() *UserRepo {
@@ -46,10 +47,11 @@ func (r *UserRepo) RegisterNewUser() error {
 		}
 
 		err = tx.Create(&models.User{
-			Email:       r.CreateUserInput.EncryptedEmail,
-			Password:    r.CreateUserInput.Password,
-			Username:    r.CreateUserInput.Username,
-			PhoneNumber: r.CreateUserInput.PhoneNumber,
+			Email:                 r.CreateUserInput.EncryptedEmail,
+			Password:              r.CreateUserInput.Password,
+			Username:              r.CreateUserInput.Username,
+			PhoneNumber:           r.CreateUserInput.PhoneNumber,
+			EmailConfirmationCode: r.CreateUserInput.HashedEmailCodeConfirmation,
 		}).Error
 		if err != nil {
 			logrus.Error(err)
