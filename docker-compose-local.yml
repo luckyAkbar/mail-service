@@ -3,5 +3,7 @@ version: '3'
 services:
   mail_service_server:
     build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
