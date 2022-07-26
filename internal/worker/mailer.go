@@ -1,37 +1,40 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"mail-service/internal/config"
 	"mail-service/internal/helper"
-	"mail-service/internal/models"
-	"mail-service/internal/repository"
+	"mail-service/internal/model"
 	"time"
 
-	"github.com/kumparan/go-utils/encryption"
 	sib "github.com/sendinblue/APIv3-go-library/lib"
+
+	"github.com/kumparan/go-utils/encryption"
 	"github.com/sirupsen/logrus"
 )
 
 type MailWorker struct {
-	MailRepo *repository.MailRepository
+	mailRepo model.MailRepository
+	sibApi   *helper.SendInBlueHelper
 	Cryptor  *encryption.AESCryptor
 }
 
-func NewMailWorker() *MailWorker {
+func NewMailWorker(mailRepo model.MailRepository, sibApi *helper.SendInBlueHelper) *MailWorker {
 	return &MailWorker{
-		MailRepo: repository.NewMailRepo(),
+		mailRepo: mailRepo,
+		sibApi:   sibApi,
 		Cryptor:  helper.CreateCryptor(),
 	}
 }
 
 func (m *MailWorker) SpawnWorker() {
 	logrus.Info("Mail Worker Spawned")
-	for true {
+	for {
 		time.Sleep(config.FreeMailerWorkerSleepDuration())
 		logrus.Info("New Iteration for Mail Worker")
 
-		list, err := m.MailRepo.GetPendingFreeMailingList(config.FreeMailProcessingLimit())
+		list, err := m.mailRepo.GetPendingMailingList(context.Background(), config.MailProcessingLimit())
 		if err != nil {
 			logrus.Error("Mail Worker error:", err)
 			continue
@@ -46,73 +49,36 @@ func (m *MailWorker) SpawnWorker() {
 	}
 }
 
-func (m *MailWorker) sendEmail(list []models.MailingList) {
-	sibHelper := helper.NewSIBHelper()
+func (m *MailWorker) sendEmail(list []model.MailingList) {
 	for _, mail := range list {
-		content, err := m.decryptEmailContent(mail)
-		if err != nil {
+		if err := mail.Decrypt(); err != nil {
 			logrus.Error(err)
 			continue
 		}
 
-		err = sibHelper.SendEmail(sibHelper.CreateEmailContent(
-			content.Subject,
-			content.SenderName,
-			content.HtmlContent,
+		err := m.sibApi.SendEmail(m.sibApi.CreateEmailContent(
+			mail.Subject,
+			mail.SenderName,
+			mail.SenderEmail,
+			mail.Content,
 			sib.SendSmtpEmailTo{
-				Name:  content.ReceipientName,
-				Email: content.ReceipientEmail,
+				Name:  mail.ReceipientName,
+				Email: mail.ReceipientEmail,
 			},
 		))
 
+		if err := mail.Encrypt(); err != nil {
+			logrus.Error("mail content encryption failed. storing unencrypted value on db", err.Error())
+		}
+
 		if err != nil {
 			logrus.Error(err)
-			m.MailRepo.MarkAsFailed(mail)
+			m.mailRepo.MarkAsFailed(context.Background(), &mail)
 			continue
 		}
 
-		m.MailRepo.MarkAsSent(mail)
+		m.mailRepo.MarkAsSent(context.Background(), &mail)
 	}
 
 	logrus.Info(fmt.Sprintf("Processing %d free email in this iteration", len(list)))
-}
-
-func (m *MailWorker) decryptEmailContent(content models.MailingList) (models.MailingList, error) {
-	subject, err := m.Cryptor.Decrypt(content.Subject)
-	if err != nil {
-		logrus.Error(err)
-		return content, err
-	}
-
-	receipientEmail, err := m.Cryptor.Decrypt(content.ReceipientEmail)
-	if err != nil {
-		logrus.Error(err)
-		return content, err
-	}
-
-	receipientName, err := m.Cryptor.Decrypt(content.ReceipientName)
-	if err != nil {
-		logrus.Error(err)
-		return content, err
-	}
-
-	senderName, err := m.Cryptor.Decrypt(content.SenderName)
-	if err != nil {
-		logrus.Error(err)
-		return content, err
-	}
-
-	HTMLContent, err := m.Cryptor.Decrypt(content.HtmlContent)
-	if err != nil {
-		logrus.Error(err)
-		return content, err
-	}
-
-	return models.MailingList{
-		Subject:         subject,
-		ReceipientEmail: receipientEmail,
-		ReceipientName:  receipientName,
-		SenderName:      senderName,
-		HtmlContent:     HTMLContent,
-	}, nil
 }
