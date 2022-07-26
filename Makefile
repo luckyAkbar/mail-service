@@ -19,25 +19,13 @@ migrate:
 		go run main.go migrate --direction=$(DIRECTION) --step=$(STEP);\
     fi
 
-# internal/model/mock/mock_user_usecase.go:
-# 	mockgen -destination=internal/model/mock/mock_user_usecase.go -package=mock github.com/Himatro2021/API/internal/model UserUsecase
-# internal/model/mock/mock_user_repository.go:
-# 	mockgen -destination=internal/model/mock/mock_user_repository.go -package=mock github.com/Himatro2021/API/internal/model UserRepository
-# internal/model/mock/mock_absent_usecase.go:
-# 	mockgen -destination=internal/model/mock/mock_absent_usecase.go -package=mock github.com/Himatro2021/API/internal/model AbsentUsecase
-# internal/model/mock/mock_absent_repository.go:
-# 	mockgen -destination=internal/model/mock/mock_absent_repository.go -package=mock github.com/Himatro2021/API/internal/model AbsentRepository
-# internal/model/mock/mock_auth_usecase.go:
-# 	mockgen -destination=internal/model/mock/mock_auth_usecase.go -package=mock github.com/Himatro2021/API/internal/model AuthUsecase
-# internal/model/mock/mock_session_repository.go:
-# 	mockgen -destination=internal/model/mock/mock_session_repository.go -package=mock github.com/Himatro2021/API/internal/model SessionRepository
+internal/model/mock/mock_mail_usecase.go:
+	mockgen -destination=internal/model/mock/mock_mail_usecase.go -package=mock mail-service/internal/model MailUsecase
+internal/model/mock/mock_mail_repository.go:
+	mockgen -destination=internal/model/mock/mock_mail_repository.go -package=mock mail-service/internal/model MailRepository
 
-# mockgen: internal/model/mock/mock_session_repository.go \
-# 	internal/model/mock/mock_user_usecase.go \
-# 	internal/model/mock/mock_user_repository.go \
-# 	internal/model/mock/mock_absent_usecase.go \
-# 	internal/model/mock/mock_absent_repository.go \
-# 	internal/model/mock/mock_auth_usecase.go
+mockgen: internal/model/mock/mock_mail_usecase.go \
+	internal/model/mock/mock_mail_repository.go
 
 clean:
 	rm -v internal/model/mock/mock_*.go
