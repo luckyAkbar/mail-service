@@ -1,42 +1,63 @@
 package console
 
 import (
-	"log"
+	"mail-service/internal/config"
 	"mail-service/internal/db"
-	"mail-service/internal/models"
+	"strconv"
 
+	"github.com/kumparan/go-utils"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	migrate "github.com/rubenv/sql-migrate"
 )
 
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "initialize database table",
 	Long:  "Use this command to intialize your database scheme for the first time",
-	Run:   migrate,
+	Run:   runMigrate,
 }
 
 func init() {
+	migrateCmd.PersistentFlags().Int("step", 0, "maximum migration step")
+	migrateCmd.PersistentFlags().String("direction", "up", "migration direction")
 	RootCmd.AddCommand(migrateCmd)
 }
 
-func migrate(cmd *cobra.Command, args []string) {
-	log.Print("Preparing to migrating...")
+func runMigrate(cmd *cobra.Command, args []string) {
+	direction := cmd.Flag("direction").Value.String()
+	stepStr := cmd.Flag("step").Value.String()
 
-	if err := db.PgConnect(); err != nil {
-		log.Panic("Failed to connect to Postgres Database")
+	step, err := strconv.Atoi(stepStr)
+	if err != nil {
+		logrus.Fatal("invalid step value. ", err.Error())
 	}
 
-	log.Println("Connected to the database!")
-	log.Println("Migration start...")
+	migrations := &migrate.FileMigrationSource{
+		Dir: "./db/migration",
+	}
 
-	log.Println("Migrating User model")
-	db.DB.AutoMigrate(&models.User{})
+	migrate.SetTable("schema_migrations")
+	db.InitializePostgresConn()
 
-	log.Println("Migrating APIKey model")
-	db.DB.AutoMigrate(&models.APIKey{})
+	pgdb, err := db.PostgresDB.DB()
+	if err != nil {
+		logrus.WithField("DatabaseDSN", config.PostgresDSN()).Fatal("failed to run migration")
+	}
 
-	log.Println("Migrating MailingList model")
-	db.DB.AutoMigrate(&models.MailingList{})
+	var n int
+	if direction == "down" {
+		n, err = migrate.ExecMax(pgdb, "postgres", migrations, migrate.Down, step)
+	} else {
+		n, err = migrate.ExecMax(pgdb, "postgres", migrations, migrate.Up, step)
+	}
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"migrations": utils.Dump(migrations),
+			"direction":  direction}).
+			Fatal("Failed to migrate database: ", err)
+	}
 
-	log.Println("Migration finished.")
+	logrus.Infof("Applied %d migrations!\n", n)
 }
