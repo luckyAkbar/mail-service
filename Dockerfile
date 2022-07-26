@@ -1,11 +1,9 @@
-FROM golang:1.18-alpine
+FROM golang:1.18.3-alpine
 
 WORKDIR /app
 
-RUN mkdir src
 RUN mkdir bin
-
-WORKDIR /app/src
+RUN mkdir src
 
 COPY go.mod .
 COPY go.sum .
@@ -13,14 +11,15 @@ COPY go.sum .
 RUN go mod download
 RUN go mod tidy
 
+WORKDIR /app/src
+
 COPY . .
+RUN go build -o /app/bin/main main.go
 
-RUN go build -o /app/bin main.go
+RUN rm -r /app/src/
 
-WORKDIR /app
+WORKDIR /app/bin
 
-RUN rm -r src/
+COPY .env .
 
-EXPOSE 5000
-
-CMD ["bin/main", "server"]
+CMD ["./main", "server"]
