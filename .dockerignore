@@ -1,5 +1,4 @@
 tmp/
-.env
 Dockerfile
 docker-compose.yml
 docker-compose-local.yml

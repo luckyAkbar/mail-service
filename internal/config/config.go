@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func PgConnString() string {
+func PostgresDSN() string {
 	host := os.Getenv("PGHOST")
 	db := os.Getenv("PGDATABASE")
 	user := os.Getenv("PGUSER")
@@ -113,8 +113,8 @@ func FreeMailerWorkerSleepDuration() time.Duration {
 	return time.Duration(sec * int(time.Second))
 }
 
-func FreeMailProcessingLimit() int {
-	cfg, err := strconv.Atoi(os.Getenv("FREE_MAIL_PROCESSING_LIMIT_PER_DURATION"))
+func MailProcessingLimit() int {
+	cfg, err := strconv.Atoi(os.Getenv("MAIL_PROCESSING_LIMIT_PER_DURATION"))
 	if err != nil {
 		return DEFAULT_FREE_EMAIL_LIST_QUERY_LIMIT
 	}

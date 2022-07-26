@@ -7,10 +7,7 @@ import (
 )
 
 var (
-	ErrInvalidPayload              = echo.NewHTTPError(http.StatusBadRequest, "invalid payload")
-	ErrFailedToRegisterMailingList = echo.NewHTTPError(http.StatusInternalServerError, "failed to create mailing list")
+	ErrInvalidPayload = echo.NewHTTPError(http.StatusBadRequest, "Payload Invalid")
+	ErrValidation     = echo.NewHTTPError(http.StatusBadRequest, "Validation Error")
+	ErrInternal       = echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 )
-
-func ErrCustomMsgAndStatus(status int, msg string) *echo.HTTPError {
-	return echo.NewHTTPError(status, msg)
-}
