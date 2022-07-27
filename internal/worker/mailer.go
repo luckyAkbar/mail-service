@@ -9,6 +9,7 @@ import (
 	"time"
 
 	sib "github.com/sendinblue/APIv3-go-library/lib"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/kumparan/go-utils/encryption"
 	"github.com/sirupsen/logrus"
@@ -56,6 +57,7 @@ func (m *MailWorker) sendEmail(list []model.MailingList) {
 			continue
 		}
 
+		now := time.Now()
 		err := m.sibApi.SendEmail(m.sibApi.CreateEmailContent(
 			mail.Subject,
 			mail.SenderName,
@@ -67,6 +69,8 @@ func (m *MailWorker) sendEmail(list []model.MailingList) {
 			},
 		))
 
+		mail.LastSendingAttempt = null.NewTime(now, true)
+
 		if err := mail.Encrypt(); err != nil {
 			logrus.Error("mail content encryption failed. storing unencrypted value on db", err.Error())
 		}
@@ -76,6 +80,8 @@ func (m *MailWorker) sendEmail(list []model.MailingList) {
 			m.mailRepo.MarkAsFailed(context.Background(), &mail)
 			continue
 		}
+
+		mail.SentAt = null.NewTime(now, true)
 
 		m.mailRepo.MarkAsSent(context.Background(), &mail)
 	}
